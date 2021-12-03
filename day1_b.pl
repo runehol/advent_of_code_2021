@@ -6,7 +6,7 @@ file_to_numbers(File, Numbers) :-
         stream_lines(In, Numbers),
         close(In)).
 
-read_line(_, end_of_file, []).
+read_line(_, end_of_file, []) :- !.
 
 read_line(In, Line, [Num|Numbers]) :-
 	Line \== end_of_file,
