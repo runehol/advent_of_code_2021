@@ -23,6 +23,14 @@ defmodule AdventOfCode do
     if one_count >= length(lst)/2, do: ?1, else: ?0
   end
 
+  def flip(v) do
+    if v == ?0, do: ?1, else: ?0
+  end
+
+  def least_common_for_pos(lst, idx) do
+    flip(most_common_for_pos(lst, idx))
+  end
+
   def most_common(lst) do
     [first | _] = lst
     n_bits = tuple_size(first)
@@ -40,7 +48,7 @@ defmodule AdventOfCode do
 
 
   def invert(lst) do
-    lst |> Enum.map(&(if &1 == ?0, do: ?1, else: ?0))
+    lst |> Enum.map(&flip/1)
   end
 
   def day3_a do
