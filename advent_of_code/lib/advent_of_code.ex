@@ -27,10 +27,6 @@ defmodule AdventOfCode do
     if v == ?0, do: ?1, else: ?0
   end
 
-  def least_common_for_pos(lst, idx) do
-    flip(most_common_for_pos(lst, idx))
-  end
-
   def most_common(lst) do
     [first | _] = lst
     n_bits = tuple_size(first)
@@ -51,6 +47,8 @@ defmodule AdventOfCode do
     lst |> Enum.map(&flip/1)
   end
 
+
+
   def day3_a do
     data = read_data("day3_input.txt")
 
@@ -63,5 +61,44 @@ defmodule AdventOfCode do
     gamma_epsilon = gamma * epsilon
     IO.puts(gamma_epsilon)
   end
+
+
+  # base case
+  def search([v], _, _) do
+    v
+    |> Tuple.to_list()
+    |> List.to_integer(2)
+  end
+
+  #recursive case
+  def search(lst, pos, fun) do
+    zero_count = Enum.count(lst, &(elem(&1, pos) == ?0))
+    one_count = Enum.count(lst, &(elem(&1, pos) == ?1))
+    winning = fun.(zero_count, one_count)
+    next_lst = Enum.filter(lst, &(elem(&1, pos) == winning))
+    search(next_lst, pos+1, fun)
+  end
+
+  def o2_count(lst) do
+    search(lst, 0, fn zeros, ones ->
+      if ones >= zeros, do: ?1, else: ?0
+    end)
+  end
+
+  def co2_count(lst) do
+    search(lst, 0, fn zeros, ones ->
+      if zeros > ones, do: ?1, else: ?0
+    end)
+  end
+
+  def day3_b do
+    data = read_data("day3_input.txt")
+
+    o2 = o2_count(data)
+    co2 = co2_count(data)
+    result = o2*co2
+    IO.puts(result)
+  end
+
 
 end
