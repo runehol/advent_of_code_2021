@@ -1,5 +1,6 @@
+#! /usr/bin/env elixir
 
-defmodule AdventOfCode do
+defmodule Day3 do
   @moduledoc """
   Documentation for `AdventOfCode`.
   """
@@ -102,3 +103,7 @@ defmodule AdventOfCode do
 
 
 end
+
+
+Day3.day3_a()
+Day3.day3_b()

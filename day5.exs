@@ -1,3 +1,4 @@
+#! /usr/bin/env elixir
 
 defmodule Day5 do
   @moduledoc """
