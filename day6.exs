@@ -1,9 +1,7 @@
 #! /usr/bin/env elixir
 
 defmodule Day6 do
-  @moduledoc """
-  Documentation for `AdventOfCode`.
-  """
+
 
 
   def read_data(fname) do

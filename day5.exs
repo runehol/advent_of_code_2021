@@ -1,9 +1,7 @@
 #! /usr/bin/env elixir
 
 defmodule Day5 do
-  @moduledoc """
-  Documentation for `AdventOfCode`.
-  """
+
 
 
   def parse_line(line) do
