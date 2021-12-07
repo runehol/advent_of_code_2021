@@ -2,7 +2,7 @@
 
 defmodule Day7 do
 
-  def read_data(fname) do
+  defp read_data(fname) do
     {:ok, contents} = File.read(fname)
     contents
     |> String.trim()
@@ -11,19 +11,19 @@ defmodule Day7 do
   end
 
 
-  def linear_cost_for_pos(subs, pos) do
+  defp linear_cost_for_pos(subs, pos) do
     Enum.reduce(subs, 0, &(&2 + abs(&1-pos)))
   end
 
-  def sum_of_integers(n) do
+  defp sum_of_integers(n) do
     div(n*(n+1), 2)
   end
 
-  def sum_cost_for_pos(subs, pos) do
+  defp sum_cost_for_pos(subs, pos) do
     Enum.reduce(subs, 0, &(&2 + sum_of_integers(abs(&1-pos))))
   end
 
-  def search(pos, cost, subs, cost_fun) do
+  defp search(pos, cost, subs, cost_fun) do
     next_cost = cost_fun.(subs, pos+1)
     gradient = next_cost - cost
     if gradient > 0 do
@@ -33,7 +33,7 @@ defmodule Day7 do
     end
   end
 
-  def scan(subs, cost_fun) do
+  defp scan(subs, cost_fun) do
     # we scan from position 0 and up, stopping when the cost gradient turns positive.
     # the assumption made here is that all subs are at non-negative position,
     # so that position 0 has no subs on the left side
