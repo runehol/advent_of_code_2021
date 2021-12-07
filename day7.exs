@@ -12,9 +12,7 @@ defmodule Day7 do
 
 
   def linear_cost_for_pos(subs, pos) do
-    subs
-    |> Enum.map(&(abs(&1-pos)))
-    |> Enum.sum()
+    Enum.reduce(subs, 0, &(&2 + abs(&1-pos)))
   end
 
   def sum_of_integers(n) do
@@ -22,9 +20,7 @@ defmodule Day7 do
   end
 
   def sum_cost_for_pos(subs, pos) do
-    subs
-    |> Enum.map(&(sum_of_integers(abs(&1-pos))))
-    |> Enum.sum
+    Enum.reduce(subs, 0, &(&2 + sum_of_integers(abs(&1-pos))))
   end
 
   def search(pos, cost, subs, cost_fun) do
