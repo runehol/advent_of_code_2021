@@ -28,7 +28,7 @@ defmodule Day15 do
 
 
 
-  defp astar_loop(goal, costs, h, open_set, g_score, f_score, came_from) do
+  defp astar_loop(goal, costs, h, open_set, g_score, f_score) do
     if PriorityQueue.empty?(open_set) do
       @infinity # failure
     else
@@ -38,26 +38,25 @@ defmodule Day15 do
         get_or_inf(f_score, current)
       else
         g_score_current = get_or_inf(g_score, current)
-        {open_set, g_score, f_score, came_from} = Enum.reduce(neighbours(current), {open_set, g_score, f_score, came_from},
-        fn neighbour, {open_set, g_score, f_score, came_from} ->
+        {open_set, g_score, f_score} = Enum.reduce(neighbours(current), {open_set, g_score, f_score},
+        fn neighbour, {open_set, g_score, f_score} ->
            cost = get_or_inf(costs, neighbour)
            if cost == @infinity do
-            {open_set, g_score, f_score, came_from}
+            {open_set, g_score, f_score}
            else
             tentative_g_score = g_score_current + cost
             if tentative_g_score < get_or_inf(g_score, neighbour) do
-              came_from = Map.put(came_from, neighbour, current)
               g_score = Map.put(g_score, neighbour, tentative_g_score)
               new_f = tentative_g_score + h.(neighbour)
               f_score = Map.put(f_score, neighbour, new_f)
               open_set = PriorityQueue.put(open_set, {new_f, neighbour})
-              {open_set, g_score, f_score, came_from}
+              {open_set, g_score, f_score}
             else
-              {open_set, g_score, f_score, came_from}
+              {open_set, g_score, f_score}
             end
            end
         end)
-        astar_loop(goal, costs, h, open_set, g_score, f_score, came_from)
+        astar_loop(goal, costs, h, open_set, g_score, f_score)
       end
     end
   end
@@ -71,10 +70,9 @@ defmodule Day15 do
       abs(gx-x) + abs(gy-y)
     end
     g_score = %{ start => 0}
-    came_from = %{}
     f_score = %{ start => h.(start)}
     open_set = PriorityQueue.new() |> PriorityQueue.put({get_or_inf(f_score, start), start})
-    astar_loop(goal, costs, h, open_set, g_score, f_score, came_from)
+    astar_loop(goal, costs, h, open_set, g_score, f_score)
   end
 
   defp wrap(val) do
