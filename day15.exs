@@ -28,11 +28,14 @@ defmodule Day15 do
   end
 
   defp lowest_score(open_set) do
-    {_, k} = open_set
-    |> Enum.map(fn {a, b} -> {b, a} end)
-    |> Enum.sort()
-    |> hd()
-
+    {k, _} = open_set
+    |> Enum.reduce({"?", @infinity}, fn {k, v}, {bestk, bestv} ->
+      if v <= bestv do
+        {k, v}
+      else
+        {bestk, bestv}
+      end
+    end)
     k
   end
 
