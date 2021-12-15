@@ -1,5 +1,4 @@
 #! /usr/bin/env elixir
-
 defmodule Day15 do
   @infinity 999999999999
 
@@ -27,29 +26,17 @@ defmodule Day15 do
     Map.get(m, key, @infinity)
   end
 
-  defp lowest_score(open_set) do
-    {k, _} = open_set
-    |> Enum.reduce({"?", @infinity}, fn {k, v}, {bestk, bestv} ->
-      if v <= bestv do
-        {k, v}
-      else
-        {bestk, bestv}
-      end
-    end)
-    k
-  end
-
 
 
   defp astar_loop(goal, costs, h, open_set, g_score, f_score, came_from) do
-    if map_size(open_set) == 0 do
+    if PriorityQueue.empty?(open_set) do
       @infinity # failure
     else
-      current = lowest_score(open_set)
+      {elm, open_set} = PriorityQueue.pop(open_set)
+      {_, current} = elm
       if current == goal do
         get_or_inf(f_score, current)
       else
-        open_set = Map.delete(open_set, current)
         g_score_current = get_or_inf(g_score, current)
         {open_set, g_score, f_score, came_from} = Enum.reduce(neighbours(current), {open_set, g_score, f_score, came_from},
         fn neighbour, {open_set, g_score, f_score, came_from} ->
@@ -63,7 +50,7 @@ defmodule Day15 do
               g_score = Map.put(g_score, neighbour, tentative_g_score)
               new_f = tentative_g_score + h.(neighbour)
               f_score = Map.put(f_score, neighbour, new_f)
-              open_set = Map.update(open_set, neighbour, new_f, &(min(&1, new_f)))
+              open_set = PriorityQueue.put(open_set, {new_f, neighbour})
               {open_set, g_score, f_score, came_from}
             else
               {open_set, g_score, f_score, came_from}
@@ -86,7 +73,7 @@ defmodule Day15 do
     g_score = %{ start => 0}
     came_from = %{}
     f_score = %{ start => h.(start)}
-    open_set = %{ start => get_or_inf(f_score, start)}
+    open_set = PriorityQueue.new() |> PriorityQueue.put({get_or_inf(f_score, start), start})
     astar_loop(goal, costs, h, open_set, g_score, f_score, came_from)
   end
 
