@@ -73,10 +73,6 @@ defmodule Day19 do
     for a <- a_set, b <- b_set, into: MapSet.new, do: sub(a, b)
   end
 
-  defp corr(a, b) do
-    MapSet.size(MapSet.intersection(a, b))
-  end
-
   def corr_set_with_translation(existing, new, {tx, ty, tz}) do
     Enum.reduce(new, 0, fn {x, y, z}, corr ->
       if MapSet.member?(existing, {x+tx, y+ty, z+tz}) do
