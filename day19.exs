@@ -1,6 +1,14 @@
 #! /usr/bin/env elixir
-defmodule Day19 do
+defmodule Parallel do
+  def map(collection, function) do
+    collection
+    |> Enum.map(&Task.async(fn -> function.(&1) end))
+    |> Enum.map(&Task.await(&1))
+  end
+end
 
+
+defmodule Day19 do
   defp parse_probes(probes) do
     for line <- probes, into: MapSet.new, do: line |>
     String.split(",") |>
@@ -70,12 +78,13 @@ defmodule Day19 do
   end
 
   defp correlate(established_set, new_set) do
-    Enum.flat_map(0..23, fn rot ->
+    Parallel.map(0..23, fn rot ->
       rot_new_set = rotate_set(rot, new_set)
       Enum.map(translation_proposals(established_set, rot_new_set), fn tr ->
         tr_new_set = translate_set(tr, rot_new_set)
         {corr(established_set, tr_new_set), tr_new_set, rot, tr}
       end)
+      |> Enum.max
     end)
     |> Enum.max
   end
