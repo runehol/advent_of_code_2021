@@ -77,20 +77,31 @@ defmodule Day19 do
     MapSet.size(MapSet.intersection(a, b))
   end
 
+  def corr_set_with_translation(existing, new, {tx, ty, tz}) do
+    Enum.reduce(new, 0, fn {x, y, z}, corr ->
+      if MapSet.member?(existing, {x+tx, y+ty, z+tz}) do
+        corr + 1
+      else
+        corr
+      end
+    end)
+  end
+
   defp correlate(established_set, new_set) do
-    Parallel.map(0..23, fn rot ->
+    {corr, rot, pos} = Parallel.map(0..23, fn rot ->
       rot_new_set = rotate_set(rot, new_set)
-      Enum.reduce(translation_proposals(established_set, rot_new_set), {0, MapSet.new, -1, {0, 0, 0}}, fn tr, existing ->
+      Enum.reduce(translation_proposals(established_set, rot_new_set), {0, -1, {0, 0, 0}}, fn tr, existing ->
         if elem(existing, 0) >= 12 do
           existing
         else
-          tr_new_set = translate_set(tr, rot_new_set)
-          new = {corr(established_set, tr_new_set), tr_new_set, rot, tr}
+          new = {corr_set_with_translation(established_set, rot_new_set, tr), rot, tr}
           max(new, existing)
         end
       end)
     end)
     |> Enum.max
+
+    {corr, translate_set(pos, rotate_set(rot, new_set)), rot, pos}
   end
 
   defp add_to_accepted_set(new_set, {accepted, rejected}) do
