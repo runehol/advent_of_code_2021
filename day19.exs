@@ -69,31 +69,22 @@ defmodule Day19 do
 
   defp sub({x2, y2, z2}, {x1, y1, z1}), do: {x2-x1, y2-y1, z2-z1}
 
-  defp translation_proposals(a_set, b_set) do
-    for a <- a_set, b <- b_set, into: MapSet.new, do: sub(a, b)
-  end
 
-  def corr_set_with_translation(existing, new, {tx, ty, tz}) do
-    Enum.reduce(new, 0, fn {x, y, z}, corr ->
-      if MapSet.member?(existing, {x+tx, y+ty, z+tz}) do
-        corr + 1
-      else
-        corr
-      end
+  def best_translation(a_set, b_set, rot) do
+    Enum.reduce(a_set, %{}, fn a, d ->
+      Enum.reduce(b_set, d, fn b, d ->
+        pos = sub(a, b)
+        Map.update(d, pos, 1, &(&1+1))
+      end)
     end)
+    |> Enum.map(fn {pos, corr} -> {corr, rot, pos} end)
+    |> Enum.max
   end
 
   defp correlate(established_set, new_set) do
     {corr, rot, pos} = Parallel.map(0..23, fn rot ->
       rot_new_set = rotate_set(rot, new_set)
-      Enum.reduce(translation_proposals(established_set, rot_new_set), {0, -1, {0, 0, 0}}, fn tr, existing ->
-        if elem(existing, 0) >= 12 do
-          existing
-        else
-          new = {corr_set_with_translation(established_set, rot_new_set, tr), rot, tr}
-          max(new, existing)
-        end
-      end)
+      best_translation(established_set, rot_new_set, rot)
     end)
     |> Enum.max
 
@@ -101,7 +92,7 @@ defmodule Day19 do
   end
 
   defp add_to_accepted_set(new_set, {accepted, rejected}) do
-    {correlations, tr_rot_set, rot, pos} =
+    {correlations, tr_rot_set, _, pos} =
       Enum.reduce(accepted, {0, MapSet.new, -1, {0, 0, 0}},
       fn {existing_set, _}, acc ->
         if elem(acc, 0) >= 12 do
@@ -110,7 +101,6 @@ defmodule Day19 do
           max(correlate(existing_set, new_set), acc)
         end
       end)
-    IO.inspect({"Correlation of #{correlations}, rotation #{rot}, position", pos})
     if correlations >= 12 do
       {[{tr_rot_set, pos}|accepted], rejected}
     else
@@ -120,7 +110,6 @@ defmodule Day19 do
 
 
   defp build_map_step(accepted, not_accepted) do
-    IO.puts("build map step of #{length(accepted)} in, #{length(not_accepted)} out")
     {new_accepted, new_rejected} = not_accepted
     |> Enum.reduce({accepted, []}, &add_to_accepted_set/2)
     if new_rejected != [] do
