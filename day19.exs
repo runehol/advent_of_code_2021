@@ -80,17 +80,29 @@ defmodule Day19 do
   defp correlate(established_set, new_set) do
     Parallel.map(0..23, fn rot ->
       rot_new_set = rotate_set(rot, new_set)
-      Enum.map(translation_proposals(established_set, rot_new_set), fn tr ->
-        tr_new_set = translate_set(tr, rot_new_set)
-        {corr(established_set, tr_new_set), tr_new_set, rot, tr}
+      Enum.reduce(translation_proposals(established_set, rot_new_set), {0, MapSet.new, -1, {0, 0, 0}}, fn tr, existing ->
+        if elem(existing, 0) >= 12 do
+          existing
+        else
+          tr_new_set = translate_set(tr, rot_new_set)
+          new = {corr(established_set, tr_new_set), tr_new_set, rot, tr}
+          max(new, existing)
+        end
       end)
-      |> Enum.max
     end)
     |> Enum.max
   end
 
   defp add_to_accepted_set(new_set, {accepted, rejected}) do
-    {correlations, tr_rot_set, rot, pos} = Enum.map(accepted, fn {existing_set, _} -> correlate(existing_set, new_set) end) |> Enum.max
+    {correlations, tr_rot_set, rot, pos} =
+      Enum.reduce(accepted, {0, MapSet.new, -1, {0, 0, 0}},
+      fn {existing_set, _}, acc ->
+        if elem(acc, 0) >= 12 do
+          acc
+        else
+          max(correlate(existing_set, new_set), acc)
+        end
+      end)
     IO.inspect({"Correlation of #{correlations}, rotation #{rot}, position", pos})
     if correlations >= 12 do
       {[{tr_rot_set, pos}|accepted], rejected}
