@@ -22,6 +22,7 @@ defmodule AdventOfCode2021.MixProject do
   defp deps do
     [
       {:priority_queue, "~> 1.0.0"},
+      {:memoize, "~> 1.4"},
     ]
   end
 end

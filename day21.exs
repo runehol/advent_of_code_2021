@@ -20,19 +20,9 @@ defmodule Die do
 
 end
 
-defmodule Player do
-  defstruct name: "Unknown", position: 0, score: 0
-
-  def new(name, start_pos) do
-    %Player{name: name, position: start_pos}
-  end
-
-  def move(%Player{score: score}=player, new_pos) do
-    %Player{player | score: score+new_pos, position: new_pos}
-  end
-end
 
 defmodule Day21 do
+  use Memoize
 
   defp read_data(fname) do
     {:ok, contents} = File.read(fname)
@@ -40,34 +30,51 @@ defmodule Day21 do
     contents
     |> String.split("\n", trim: true)
     |> Enum.map(fn line ->
-      [_, name, pos] = Regex.run(~r/^Player (\d+) starting position: (\d+)$/, line)
-      Player.new(name, String.to_integer(pos))
+      [_, _, pos] = Regex.run(~r/^Player (\d+) starting position: (\d+)$/, line)
+      String.to_integer(pos)
     end)
   end
 
   defp board_pos(curr_pos, roll), do: rem((curr_pos + roll - 1), 10) + 1
 
-  defp win(_, losing_player, die) do
-    losing_player.score * die.rolls
+  defp play_a({_, turn_score, _, other_score}, die) when other_score >= 1000 do
+    turn_score * die.rolls
   end
 
-  defp play(turn_player, other_player, die) do
+  defp play_a({turn_pos, turn_score, other_pos, other_score}, die) do
     {roll, die} = Die.roll3(die)
-    new_pos = board_pos(turn_player.position, roll)
-    turn_player = Player.move(turn_player, new_pos)
-    if turn_player.score >= 1000 do
-      win(turn_player, other_player, die)
-    else
-      play(other_player, turn_player, die)
-    end
+    new_pos = board_pos(turn_pos, roll)
+    turn_score = turn_score + new_pos
+    turn_pos = new_pos
+    play_a({other_pos, other_score, turn_pos, turn_score}, die)
   end
 
   def run_a do
-    [player_1, player_2] = read_data("day21_input.txt")
-    IO.puts(play(player_1, player_2, Die.new))
+    [player_1_pos, player_2_pos] = read_data("day21_input.txt")
+    IO.puts(play_a({player_1_pos, 0, player_2_pos, 0}, Die.new))
+  end
+
+  defmemo play_b({_, _, _, other_score}) when other_score >= 21 do
+    {0, 1}
+  end
+
+  @die_rolls for a <- 1..3, b <- 1..3, c<- 1..3, do: a+b+c
+
+  defmemo play_b({turn_pos, turn_score, other_pos, other_score}) do
+    Enum.reduce(@die_rolls, {0, 0}, fn roll, {sum_turn, sum_other} ->
+      new_pos = board_pos(turn_pos, roll)
+      turn_score = turn_score + new_pos
+      turn_pos = new_pos
+      {other_wins, turn_wins} = play_b({other_pos, other_score, turn_pos, turn_score})
+      {sum_turn + turn_wins, sum_other + other_wins}
+    end)
   end
 
   def run_b do
+    [player_1_pos, player_2_pos] = read_data("day21_input.txt")
+    wins = play_b({player_1_pos, 0, player_2_pos, 0})
+    IO.inspect(wins)
+    IO.puts(Enum.max(Tuple.to_list(wins)))
   end
 
 
