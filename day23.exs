@@ -7,7 +7,7 @@ defmodule Day23 do
   @infinity 999999999999
 
 
-  defp print_map(map, {xmax, ymax}) do
+  def print_map(map, {xmax, ymax}) do
     data = [
       ["+", String.duplicate("+", xmax+1), "+\n"],
       ["+", Enum.map(0..xmax, &(Map.get(map, {&1,0}, "."))), "+\n"],
@@ -29,8 +29,8 @@ defmodule Day23 do
   defp preferred_burrow("D"), do: 8
 
   defp direction({_, y}, _) when y > 0, do: :upleftright # out of the burrow
-  defp direction({x, 0}, preferred_x) when preferred_x > x, do: :leftdown
-  defp direction({_, 0}, _), do: :rightdown
+  defp direction({x, 0}, preferred_x) when preferred_x < x, do: :leftdown
+  defp direction({x, 0}, preferred_x) when preferred_x > x, do: :rightdown
 
   defp correct_pos({2, y}, "A") when y > 0, do: true
   defp correct_pos({4, y}, "B") when y > 0, do: true
@@ -43,9 +43,9 @@ defmodule Day23 do
   defp legal_stopping_point({4, 0}, _), do: false
   defp legal_stopping_point({6, 0}, _), do: false
   defp legal_stopping_point({8, 0}, _), do: false
-  defp legal_stopping_point({0, _}, :leftdown), do: false
-  defp legal_stopping_point({0, _}, :rightdown), do: false
-  defp legal_stopping_point({0, _}, :down), do: false
+  defp legal_stopping_point({_, 0}, :leftdown), do: false
+  defp legal_stopping_point({_, 0}, :rightdown), do: false
+  defp legal_stopping_point({_, 0}, :down), do: false
   defp legal_stopping_point(_, :upleftright), do: false
   defp legal_stopping_point(_, _), do: true
 
@@ -80,17 +80,18 @@ defmodule Day23 do
     end)
   end
 
-  defp min_moves({a_cost, a_moves}, {b_cost, b_moves}) when a_cost <= b_cost, do: {a_cost, a_moves}
-  defp min_moves({a_cost, a_moves}, {b_cost, b_moves}), do: {b_cost, b_moves}
-
+  defp min_moves({a_cost, a_moves}, {b_cost, b_moves}) do
+    if a_cost <= b_cost do
+      {a_cost, a_moves}
+    else
+      {b_cost, b_moves}
+    end
+  end
 
   defp move_piece(map, from_pos, {x, y}=pos, kind, dir_to_here, {xmax, ymax}=extents, single_move_cost) do
-    #IO.inspect({"move_piece", pos, kind, dir_to_here})
     if x < 0 || x > xmax || y < 0 || y > ymax || Map.has_key?(map, pos) do
-      #IO.inspect({"rejecting position", pos})
       {@infinity, []} # can't do it
     else
-
       min_move_cost_moves = Enum.reduce(next_moves(pos, preferred_burrow(kind), dir_to_here), {@infinity, []}, fn move, best_cost ->
         next_pos = step(pos, move)
         {cost, moves} = move_piece(map, from_pos, next_pos, kind, move, extents, single_move_cost)
@@ -108,7 +109,7 @@ defmodule Day23 do
           {@infinity, []}
         else
           {cost, moves} = find_move(new_map, extents)
-          {cost, [{from_pos, kind, pos, cost}|moves]}
+          {cost, [{from_pos, kind, pos}|moves]}
         end
       else
         {@infinity, []}
@@ -119,8 +120,6 @@ defmodule Day23 do
 
 
   defmemo find_move(map, extents) do
-    IO.puts("find_move")
-    print_map(map, extents)
     if Enum.reduce(map, true, fn {pos, v}, correct ->
         correct && correct_pos(pos, v)
     end) do
@@ -131,7 +130,7 @@ defmodule Day23 do
         if kind == "P" do
           best_cost_so_far
         else
-          dir = direction(pos, kind)
+          dir = direction(pos, preferred_burrow(kind))
           next_pos = step(pos, dir)
           single_move_cost = move_cost(kind)
           {cost, moves} = move_piece(Map.delete(map, pos), pos, next_pos, kind, dir, extents, single_move_cost)
@@ -163,14 +162,18 @@ defmodule Day23 do
 
 
   def run_a do
-    {map, extents} = read_data("day23_test2_input.txt")
+    {map, extents} = read_data("day23_input.txt")
     print_map(map, extents)
-    cost = find_move(map, extents)
-    IO.inspect(cost)
+    cost_moves = find_move(map, extents)
+    IO.inspect(cost_moves)
   end
 
 
   def run_b do
+    {map, extents} = read_data("day23_part2_input.txt")
+    print_map(map, extents)
+    cost_moves = find_move(map, extents)
+    IO.inspect(cost_moves)
   end
 
 
