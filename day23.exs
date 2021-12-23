@@ -1,7 +1,6 @@
 #! /usr/bin/env elixir
 
 
-
 defmodule Day23 do
   use Memoize
   @infinity 999999999999
@@ -80,14 +79,6 @@ defmodule Day23 do
     end)
   end
 
-  defp min_moves({a_cost, a_moves}, {b_cost, b_moves}) do
-    if a_cost <= b_cost do
-      {a_cost, a_moves}
-    else
-      {b_cost, b_moves}
-    end
-  end
-
   defp move_piece(map, from_pos, {x, y}=pos, kind, dir_to_here, {xmax, ymax}=extents, single_move_cost) do
     if x < 0 || x > xmax || y < 0 || y > ymax || Map.has_key?(map, pos) do
       {@infinity, []} # can't do it
@@ -95,7 +86,7 @@ defmodule Day23 do
       min_move_cost_moves = Enum.reduce(next_moves(pos, preferred_burrow(kind), dir_to_here), {@infinity, []}, fn move, best_cost ->
         next_pos = step(pos, move)
         {cost, moves} = move_piece(map, from_pos, next_pos, kind, move, extents, single_move_cost)
-        min_moves(best_cost, {cost+single_move_cost, moves})
+        min(best_cost, {cost+single_move_cost, moves})
       end)
 
       #if this is a legal stopping point, we should try to stop here and find the next move
@@ -114,7 +105,7 @@ defmodule Day23 do
       else
         {@infinity, []}
       end
-      min_moves(min_move_cost_moves, stop_cost_moves)
+      min(min_move_cost_moves, stop_cost_moves)
     end
   end
 
@@ -134,7 +125,7 @@ defmodule Day23 do
           next_pos = step(pos, dir)
           single_move_cost = move_cost(kind)
           {cost, moves} = move_piece(Map.delete(map, pos), pos, next_pos, kind, dir, extents, single_move_cost)
-          min_moves(best_cost_so_far, {cost+single_move_cost, moves})
+          min(best_cost_so_far, {cost+single_move_cost, moves})
         end
       end)
     end
