@@ -160,20 +160,33 @@ defmodule Day23 do
     {map, {10, ymax}}
   end
 
+  defp print_moves([]), do: nil
+
+  defp print_moves([{{fromx,fromy}, piece, {tox,toy}}|rest]) do
+    IO.puts("Move #{piece} from #{fromx},#{fromy} to #{tox},#{toy}")
+    print_moves(rest)
+  end
+
+  def print_solution({cost, moves}) do
+    IO.puts("Cost: #{cost}")
+    IO.puts("Moves:")
+    print_moves(moves)
+    IO.puts("")
+  end
 
   def run_a do
     {map, extents} = read_data("day23_input.txt")
     print_map(map, extents)
-    cost_moves = find_move(map, extents)
-    IO.inspect(cost_moves)
+    solution = find_move(map, extents)
+    print_solution(solution)
   end
 
 
   def run_b do
     {map, extents} = read_data("day23_part2_input.txt")
     print_map(map, extents)
-    cost_moves = find_move(map, extents)
-    IO.inspect(cost_moves)
+    solution = find_move(map, extents)
+    print_solution(solution)
   end
 
 
